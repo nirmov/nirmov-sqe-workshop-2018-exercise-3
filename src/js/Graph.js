@@ -1,13 +1,16 @@
-import {getMapColors} from './symbolic';
+import {getMapColors,getWhileMap} from './symbolic';
 export {startGraph,handleLiteral,getObjectArray,getObjects,handleWhileStatement,handleIfStatement,getDraw,initiate,handleLogicalExpression,handleMemberExpression,handleFunctionDeclaration,handleProgram,handleExpressionStatement,handleVariableDeclaration,handleReturnStatement,handleIdentifier,handleBinaryExpression,handleUnaryExpression};
 let line=1;
 var next;
 var index=0;
+var indexWhile;
+var whileMap;
 var objects={};
 var toDraw;
 var Whilenode;
 var dictinoaryFunction =
     {
+        'UpdateExpression' : HandleUpdateExpression,
         'FunctionDeclaration' : handleFunctionDeclaration,
         'VariableDeclarator'  : handleVariableDeclarator,
         'BlockStatement' : handleBlockStatement,
@@ -34,6 +37,8 @@ function initiate()
 {
     objects=[];
     index=0;
+    indexWhile=0;
+    whileMap=getWhileMap();
     next=undefined;
     Whilenode=undefined;
     indexColor=0;
@@ -63,31 +68,31 @@ function getStringToFlowChart()
             continue;
         var color=getColorNode(node);
         if (node.type=='square')
-            oprands+= 'op'+node.index+'=>operation: '+getLinesContent(node.lines)+'|'+color+'\n';
+            oprands+= 'op'+node.index+'=>operation: '+getLinesContent(node)+'|'+color+'\n';
         else if (node.type=='meoyan')
-            oprands+= 'op'+node.index+'=>condition: '+getLinesContent(node.lines)+'|'+color+'\n';
+            oprands+= 'op'+node.index+'=>condition: '+getLinesContent(node)+'|'+color+'\n';
         else
-            oprands+= 'op'+node.index+'=>start: continue |'+color+'\n';
+            oprands+= 'op'+node.index+'=>start: ('+node.index+')\n continue |'+color+'\n';
     }
     return addKshatot(oprands);
 
 }
 function getLinesContent(lines)
 {
-    var ans='';
+
+    var ans='('+lines.index+')\n';
+    lines=lines.lines;
     for (let i=0;i<lines.length;i++)
         ans+=lines[i]+'\n';
     return ans;
 }
 function addKshatot2(node,nodeName,oprands,type)
 {
-    if (node!=undefined) {
-        var nodeTrue='op'+node.index;
-        if (node.isTrue)
-            oprands+=nodeName+'('+type+')->'+nodeTrue+'\n';
-        else
-            oprands+=nodeName+'('+type+',right)->'+nodeTrue+'\n';
-    }
+    var nodeTrue='op'+node.index;
+    if (node.isTrue)
+        oprands+=nodeName+'('+type+')->'+nodeTrue+'\n';
+    else
+        oprands+=nodeName+'('+type+',right)->'+nodeTrue+'\n';
     return oprands;
 }
 function addKshatot(oprands)
@@ -106,6 +111,7 @@ function addKshatot(oprands)
             oprands+=nodeName+'->'+nodeNext+'\n';
         }
     }
+
     return oprands;
 }
 function getColorNode(node)
@@ -241,8 +247,18 @@ function handleExpressionStatement(parsedCode,curentNode,NextNode,isTrue) {
     line += 1;
     return toReturn;
 }
-
-
+function HandleUpdateExpression(parsedCode,curentNode,NextNode,isTrue) {
+    var node=curentNode;
+    if (curentNode.lines== undefined)
+    {
+        node=getNodeAfterAssigment(curentNode,NextNode);
+    }
+    var obj={};
+    addToObj(obj,line,'update expression',parseNewCode(parsedCode.argument),'',parsedCode.operator);
+    node.lines.push(parseNewCode(parsedCode.argument)+' '+ parsedCode.operator);
+    node.isTrue=isTrue;
+    return obj;
+}
 function handleAssignmentExpression(parsedCode,curentNode,NextNode,isTrue) {
     var obj = {};
     var left =parseNewCode(parsedCode.left);
@@ -285,7 +301,8 @@ function handleWhileStatement(parsedCode,curentNode,NextNode,isTrue) {
     NextNode=newNode;
     var trueNode=initateNode([],'square',NextNode,isTrue);
     newNode.true=trueNode;
-    Array.prototype.push.apply(toReturn, parseNewCode(parsedCode.body,trueNode,NextNode,isTrue));
+    var isTrueWhile=getIsTrueWhile();
+    Array.prototype.push.apply(toReturn, parseNewCode(parsedCode.body,trueNode,NextNode,isTrueWhile));
     Whilenode=newNode;
     return toReturn;
 }
@@ -376,6 +393,12 @@ function getIsTrue()
 {
     var to=colorArray[indexColor];
     indexColor++;
+    return to;
+}
+function getIsTrueWhile()
+{
+    var to=whileMap[indexWhile];
+    indexWhile++;
     return to;
 }
 function handleReturnStatement(parsedCode,curentNode,NextNode,isTrue) {

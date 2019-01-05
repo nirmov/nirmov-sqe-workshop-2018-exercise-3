@@ -344,19 +344,27 @@ describe('The javascript parser', () => {
         getObjects(curentNode);
         var objects=getObjectArray();
         assert.equal(objects.length,7);
-        var ans="op0=>operation: |green\n" +
-            "op1=>condition: (1==2)\n" +
+        var ans="op0=>operation: (0)\n" +
             "|green\n" +
-            "op2=>start: continue |green\n" +
-            "op3=>operation: a = 7\n" +
+            "op1=>condition: (1)\n" +
+            "(1==2)\n" +
+            "|green\n" +
+            "op2=>start: (2)\n" +
+            " continue |green\n" +
+            "op3=>operation: (3)\n" +
+            "a = 7\n" +
             "|white\n" +
-            "op4=>condition: (2==3)\n" +
+            "op4=>condition: (4)\n" +
+            "(2==3)\n" +
             "|green\n" +
-            "op5=>operation: a = 10\n" +
+            "op5=>operation: (5)\n" +
+            "a = 10\n" +
             "|white\n" +
-            "op6=>operation: d = 9\n" +
+            "op6=>operation: (6)\n" +
+            "d = 9\n" +
             "|green\n" +
-            "op7=>operation: return 10\n" +
+            "op7=>operation: (7)\n" +
+            "return 10\n" +
             "|green\n" +
             "op0->op1\n" +
             "op1(yes,right)->op3\n" +
@@ -366,7 +374,7 @@ describe('The javascript parser', () => {
             "op4(yes,right)->op5\n" +
             "op4(no)->op6\n" +
             "op5->op2\n" +
-            "op6->op2\n" ;
+            "op6->op2\n";
         assert.equal(getDraw(),ans);
     });
     it('this is test to handle add getStringToFlowChart\n ', () => {
@@ -382,6 +390,7 @@ describe('The javascript parser', () => {
                 "      d=10;\n" +
                 "    let f=1;\n" +
                 "    d=8;\n" +
+                "    d++;\n" +
                 "  }\n" +
                 "  else\n" +
                 "  {\n" +
@@ -402,25 +411,37 @@ describe('The javascript parser', () => {
         getObjects(curentNode);
         var objects=getObjectArray();
         assert.equal(objects.length,11);
-        var ans="op0=>operation: |green\n" +
-            "op1=>condition: (x==1)\n" +
+        var ans="op0=>operation: (0)\n" +
             "|green\n" +
-            "op2=>start: continue |green\n" +
-            "op3=>operation: d = 9\n" +
+            "op1=>condition: (1)\n" +
+            "(x==1)\n" +
             "|green\n" +
-            "op4=>condition: (d==8)\n" +
+            "op2=>start: (2)\n" +
+            " continue |green\n" +
+            "op3=>operation: (3)\n" +
+            "d = 9\n" +
             "|green\n" +
-            "op5=>start: continue |green\n" +
-            "op6=>operation: d = 7\n" +
+            "op4=>condition: (4)\n" +
+            "(d==8)\n" +
+            "|green\n" +
+            "op5=>start: (5)\n" +
+            " continue |green\n" +
+            "op6=>operation: (6)\n" +
+            "d = 7\n" +
             "|white\n" +
-            "op7=>operation: d = 10\n" +
+            "op7=>operation: (7)\n" +
+            "d = 10\n" +
             "|green\n" +
-            "op8=>operation: f = 1\n" +
+            "op8=>operation: (8)\n" +
+            "f = 1\n" +
             "d = 8\n" +
+            "d ++\n" +
             "|green\n" +
-            "op9=>operation: x = 3\n" +
+            "op9=>operation: (9)\n" +
+            "x = 3\n" +
             "|white\n" +
-            "op10=>operation: return true\n" +
+            "op10=>operation: (10)\n" +
+            "return true\n" +
             "|green\n" +
             "op0->op1\n" +
             "op1(yes)->op3\n" +
@@ -435,6 +456,63 @@ describe('The javascript parser', () => {
             "op7->op5\n" +
             "op8->op2\n" +
             "op9->op2\n";
+        assert.equal(getDraw(),ans);
+    });
+    it('this is test to handle add getStringToFlowChart\n ', () => {
+        var input="function f(x,y) {\n" +
+            "    let a = 3;\n" +
+            "    while(x < y) {\n" +
+            "        if(y < x) {\n" +
+            "            x = x + 1;\n" +
+            "        }\n" +
+            "        x=7;\n" +
+            "        x=8;\n" +
+            "    } \n" +
+            "    return true;\n" +
+            "}";
+        var parsedCode=parseCode(input);
+        initiateVariableMap();
+        parseArguments("x=1,y=2");
+        parseNewCode(parsedCode,1);
+        symbole(input);
+        initiate();
+        var curentNode={};
+        curentNode.isTrue=true;
+        curentNode.lines=[];
+        startGraph(parsedCode);
+        getObjects(curentNode);
+        var objects=getObjectArray();
+        assert.equal(objects.length,9);
+        var ans="op0=>operation: (0)\n" +
+            "a = 3\n" +
+            "|green\n" +
+            "op1=>condition: (1)\n" +
+            "while (x<y)\n" +
+            "|green\n" +
+            "op3=>condition: (3)\n" +
+            "(y<x)\n" +
+            "|green\n" +
+            "op4=>start: (4)\n" +
+            " continue |green\n" +
+            "op5=>operation: (5)\n" +
+            "x = (x+1)\n" +
+            "|white\n" +
+            "op6=>operation: (6)\n" +
+            "x = 7\n" +
+            "x = 8\n" +
+            "|green\n" +
+            "op8=>operation: (8)\n" +
+            "return true\n" +
+            "|green\n" +
+            "op0->op1\n" +
+            "op1(yes)->op3\n" +
+            "op1(no)->op8\n" +
+            "op3(yes,right)->op5\n" +
+            "op3(no)->op4\n" +
+            "op3->op1\n" +
+            "op4->op6\n" +
+            "op5->op4\n" +
+            "op6->op1\n";
         assert.equal(getDraw(),ans);
     });
 });

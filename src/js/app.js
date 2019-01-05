@@ -3,7 +3,7 @@ import {parseCode} from './code-analyzer';
 import {parseNewCode} from './Parser';
 import {startGraph,getDraw} from './Graph';
 import {symbole,getMapColors,parseArguments,initiateVariableMap} from './symbolic';
-
+import * as flowchart from 'flowchart.js';
 var table = document.getElementById('Result');
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
@@ -18,6 +18,7 @@ $(document).ready(function () {
         document.getElementById('functionAfter').innerHTML = '';
         printNewFunc(final);
         startGraph(parsedCode);
+        document.getElementById('diagram').innerHTML = '';
         drawGraph(getDraw());
     });
 });

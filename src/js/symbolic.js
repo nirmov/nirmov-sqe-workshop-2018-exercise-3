@@ -3,7 +3,7 @@ import {parseCode} from './code-analyzer';
 var variableMap;
 var dicLines;
 var mapColors;
-export {initiateDics,initiateVariableMap,inserTtoVariableMap,parseNewCode,getMapColors,replaceVariables,symbole,parseArguments};
+export {initiateDics,getWhileMap,initiateVariableMap,inserTtoVariableMap,parseNewCode,getMapColors,replaceVariables,symbole,parseArguments};
 function inserTtoVariableMap(left,right)
 {
     var tokenArray=getTokenArray(right);
@@ -42,6 +42,8 @@ function initiateDics()
 {
     dicLines=[];
     mapColors=[];
+    indeWhile=0;
+    whileMap=[];
 }
 function getMapColors()
 {
@@ -192,17 +194,23 @@ function handleAssignmentExpression(parsedCode,dictinoary,lastIf) {
     addToDic(left,right,dictinoary);
     return obj;
 }
-
+var whileMap=[];
+var indeWhile=0;
 function handleWhileStatement(parsedCode,dictinoary,lastIf) {
     var toReturn = [];
     toReturn[0] = {};
     addToObj(toReturn[0], line, 'while statment', '', parseNewCode(parsedCode.test,dictinoary,lastIf), '');
     copyDicToDic(dictinoary);
     line++;
+    whileMap[indeWhile]=calculatePharse(parseNewCode(parsedCode.test,dictinoary,lastIf),dictinoary,lastIf)&&lastIf!=false;
+    indeWhile++;
     Array.prototype.push.apply(toReturn, parseNewCode(parsedCode.body,dictinoary,lastIf));
     return toReturn;
 }
-
+function getWhileMap()
+{
+    return whileMap;
+}
 function handleBinaryExpression(parsedCode) {
     var left = parseNewCode(parsedCode.left);
     var right = parseNewCode(parsedCode.right);
