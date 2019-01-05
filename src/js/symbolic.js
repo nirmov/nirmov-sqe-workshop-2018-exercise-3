@@ -202,9 +202,10 @@ function handleWhileStatement(parsedCode,dictinoary,lastIf) {
     addToObj(toReturn[0], line, 'while statment', '', parseNewCode(parsedCode.test,dictinoary,lastIf), '');
     copyDicToDic(dictinoary);
     line++;
-    whileMap[indeWhile]=calculatePharse(parseNewCode(parsedCode.test,dictinoary,lastIf),dictinoary,lastIf)&&lastIf!=false;
+    var lastWhile=calculatePharse(parseNewCode(parsedCode.test,dictinoary,lastIf),dictinoary,lastIf)&&lastIf!=false;
+    whileMap[indeWhile]=lastWhile;
     indeWhile++;
-    Array.prototype.push.apply(toReturn, parseNewCode(parsedCode.body,dictinoary,lastIf));
+    Array.prototype.push.apply(toReturn, parseNewCode(parsedCode.body,dictinoary,lastWhile));
     return toReturn;
 }
 function getWhileMap()
